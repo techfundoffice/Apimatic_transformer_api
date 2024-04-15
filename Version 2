@@ -1,0 +1,95 @@
+openapi: 3.0.0
+info:
+  title: APIMatic API Transformer
+  description: API for transforming API specifications between different formats including OpenAPI, RAML, API Blueprint, and more.
+  version: "1.0.0"
+servers:
+  - url: 'https://api.apimatic.io'
+    description: APIMatic API base URL
+
+security:
+  - ApiKeyAuth: []
+
+securitySchemes:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: X-Api-Key
+
+paths:
+  /transform:
+    post:
+      summary: Transform API Specification
+      description: This endpoint allows for the transformation of API specifications from one format to another, supporting a variety of source and target formats.
+      operationId: transformApiSpec
+      tags:
+        - Transformation
+      requestBody:
+        description: Upload the API specification or a ZIP file containing multiple specifications to be transformed.
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              description: The schema for the request payload containing the API specification or ZIP file, source format, target format, and merge option.
+              properties:
+                sourceFormat:
+                  type: string
+                  enum: [openapi_3_1, openapi_3_0, openapi_2_0, openapi_1_x, raml_1_0, raml_0_8, postman_2_0, postman_1_0, insomnia_3, har_1_2, api_blueprint_1a, wadl_2009, wsdl_1_1, google_discovery, io_docs, apimatic]
+                  description: Format of the source API specification
+                targetFormat:
+                  type: string
+                  enum: [openapi_3_1, openapi_3_0, openapi_2_0, openapi_1_2, raml_1_0, raml_0_8, postman_2_0, postman_1_0, insomnia_3, api_blueprint_1a, wsdl_1_1, wadl_2009, graphql_schema, apimatic]
+                  description: Desired format of the transformed API specification
+                specFile:
+                  type: string
+                  format: binary
+                  description: API specification file or ZIP file in binary format
+                merge:
+                  type: boolean
+                  description: Indicates if multiple API specifications in the ZIP file should be merged into a single output
+      responses:
+        '200':
+          description: Successfully transformed API specification
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Response schema containing the URL to the transformed API specification.
+                properties:
+                  transformedSpecURL:
+                    type: string
+                    format: uri
+                    description: URL to download the transformed API specification
+        '400':
+          description: Bad request - invalid input parameters or malformed file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - API key missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      type: object
+      description: Schema defining the structure of the error response for all endpoints.
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code indicating the type of error that occurred.
+        message:
+          type: string
+          description: A message describing the error in detail.
