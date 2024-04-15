@@ -1,0 +1,107 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "APIMatic API Transformer",
+    "description": "API for transforming and validating API specifications among various formats.",
+    "contact": {
+      "name": "APIMatic Support",
+      "url": "https://support.apimatic.io",
+      "email": "support@apimatic.io"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.apimatic.io",
+      "description": "APIMatic API base URL"
+    }
+  ],
+  "paths": {
+    "/transformations/transform-via-url": {
+      "post": {
+        "tags": ["Transformation"],
+        "summary": "Transform API Specification via URL",
+        "description": "Transforms an API specification by providing a URL to the specification file and specifying the desired export format.",
+        "operationId": "transformApiSpecViaUrl",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformViaUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully transformed the API specification",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid input parameters or malformed URL."
+          },
+          "401": {
+            "description": "Unauthorized - API key missing or invalid."
+          },
+          "500": {
+            "description": "Internal Server Error - an unexpected error occurred."
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TransformViaUrlRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://petstore.swagger.io/v2/swagger.json"
+          },
+          "exportFormat": {
+            "type": "string",
+            "enum": [
+              "APIMATIC",
+              "SWAGGER",
+              "OPENAPI"
+            ],
+            "description": "The desired export format of the transformed API specification."
+          }
+        },
+        "required": ["url", "exportFormat"]
+      },
+      "TransformResponse": {
+        "type": "object",
+        "properties": {
+          "transformedSpecURL": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to download the transformed API specification."
+          }
+        },
+        "description": "Response schema containing the URL to the transformed API specification."
+      }
+    },
+    "securitySchemes": {
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  }
+}
